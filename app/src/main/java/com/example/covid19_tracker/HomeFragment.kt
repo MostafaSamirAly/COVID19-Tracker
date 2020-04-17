@@ -5,6 +5,7 @@ import android.text.Editable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
@@ -27,7 +28,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     lateinit var recyclerView: RecyclerView
     lateinit var adapter: BaseRecyclerViewAdapter
     private lateinit var viewModel: MainViewModel
-    var worldData: WorldState = WorldState("", "", "")
+    var worldData: WorldState = WorldState(100, "", "","")
     var dataList : MutableList<Country> = ArrayList<Country>()
 
     companion object {
@@ -73,7 +74,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
                 worldData = data
                 setupWorldStats(data)
             }else{
-                println("Error Fetching Data")
+                Toast.makeText(context,"Error Fetching Data",Toast.LENGTH_LONG).show()
             }
         })
 
@@ -175,7 +176,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         try {
             var yellowVal = response.total_cases?.replace(",", "")?.toFloat()
             var greenVal = response.total_recovered?.replace(",", "")?.toFloat()
-            var redVal = response.total_death?.replace(",", "")?.toFloat()
+            var redVal = response.total_deaths?.replace(",", "")?.toFloat()
 
             if (yellowVal != null && greenVal != null && redVal != null) {
                 while (yellowVal > 1f && greenVal > 1f && redVal > 1f) {
@@ -235,7 +236,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         response.apply {
             confirmedCount.text = response.total_cases
             recoveredCount.text = response.total_recovered
-            deathCount.text = response.total_death
+            deathCount.text = response.total_deaths
         }
     }
 

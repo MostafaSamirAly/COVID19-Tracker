@@ -32,4 +32,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         return repo.getWorldStatsFromAPI()
     }
 
+    fun getSavedWorldState() : LiveData<List<WorldState>>{
+        return repo.getWorldStatsFromDB()
+    }
+
+
+
+
+
 }
