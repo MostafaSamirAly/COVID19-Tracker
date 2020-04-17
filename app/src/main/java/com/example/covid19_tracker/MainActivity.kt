@@ -11,9 +11,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.covid19_tracker.db.CountryDataBase
 import com.example.covid19_tracker.model.Country
 import com.example.covid19_tracker.model.WorldState
 import com.example.covid19_tracker.repository.CountryRepositoryImp
@@ -27,6 +25,7 @@ class MainActivity : AppCompatActivity() {
 
     private val homeFragment by lazy { HomeFragment() }
     private val settingsFragment by lazy { SettingsFragment() }
+    private val FIRST_RUN = "first_run_flag"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,52 +41,69 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if(checkConnectivity()){
-            viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
-                // update UI
-                if(countries != null){
-                    homeFragment.update(countries)
-                }else{
-                    println("Error Fetching Data")
-                }
-            })
 
-            viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
-                // update UI
-                if(data != null){
-                    //homeFragment.worldData = data
-                    homeFragment.updateworld(data)
-                    println(data.total_cases)
-                    println(data.total_recovered)
-                    println(data.total_death)
-                }else{
-                    println("Error Fetching Data")
-                }
-            })
-
-        }else{
+        if (checkFirstRun()) {
+            if (checkConnectivity()) {
+                viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
+                    // update UI
+                    if (countries != null) {
+                        val pref = getPreferences(Context.MODE_PRIVATE)
+                        val editor = pref.edit()
+                        editor.putBoolean(FIRST_RUN, true)
+                        editor.apply()
+                        homeFragment.update(countries)
+                        for (country in countries) {
+                            println(country.country_name)
+                        }
+                    } else {
+                        Toast.makeText(this, "Error Fetching Data", Toast.LENGTH_LONG).show()
+                    }
+                })
+            } else {
+                Toast.makeText(this, "Please Check Internet Connection", Toast.LENGTH_LONG).show()
+            }
+        } else {
             viewModel.getSavedData().observe(this, Observer<List<Country>> { countries ->
                 // update UI
                 if(countries != null){
                     /*for (country in countries) {
                         println(country.country_name)
                     }*/
-                }else{
-                    println("Error Fetching Data")
+                } else {
+                    Toast.makeText(this, "Please Check Internet Connection", Toast.LENGTH_LONG).show()
                 }
 
             })
         }
-
+        viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
+            // update UI
+            if(data != null){
+                //homeFragment.worldData = data
+                homeFragment.updateworld(data)
+                println(data.total_cases)
+                println(data.total_recovered)
+                println(data.total_death)
+            }else{
+                println("Error Fetching Data")
+            }
+        })
     }
-    private fun checkConnectivity() : Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    private fun checkConnectivity(): Boolean {
+        val connectivityManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = connectivityManager.activeNetworkInfo
         val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
         if (!isConnected) {
             Toast.makeText(this, "Check network connection", Toast.LENGTH_SHORT).show()
         }
         return isConnected
+    }
+
+    private fun checkFirstRun(): Boolean {
+        val pref = getPreferences(Context.MODE_PRIVATE)
+        val isFirstRun = pref.getBoolean(FIRST_RUN, false)
+        return isFirstRun
     }
 
     /*Mostafa End*/
