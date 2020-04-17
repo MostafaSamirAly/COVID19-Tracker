@@ -12,7 +12,7 @@
     <string name="disclaimer">This is not an official app and the data may vary depending upon the API. For exact numbers, you should rely on a government source.</string>
     <string name="new_cases">New Cases</string>
     <string name="sort">Sort</string>
-    <string name="tab_1">Overview</string>
+    <string name="tab_1">Home</string>
     <string name="tab_2">Settings</string>
     <string name="today_s_india_statistics">Today’s India Statistics</string>
     <string name="indian_states">Indian States</string>

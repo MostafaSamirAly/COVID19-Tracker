@@ -1,42 +1,25 @@
 package com.example.covid19_tracker
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Filterable
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.example.covid19_tracker.model.Country
 import com.example.covid19_tracker.viewmodel.MainViewModel
 import com.google.android.material.appbar.AppBarLayout
-import kotlinx.android.synthetic.main.fragment_overview.*
-import kotlinx.android.synthetic.main.item_list.view.*
-import com.example.covid19_tracker.BaseRecyclerViewAdapter
+import kotlinx.android.synthetic.main.fragment_home.*
 import com.example.covid19_tracker.model.WorldState
 import com.parassidhu.coronavirusapp.util.*
-import kotlinx.android.synthetic.main.fragment_overview.view.*
-import kotlinx.android.synthetic.main.item_list.view.confirmedCount
 
 class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecyclerViewAdapter.OnEvent {
 
@@ -74,7 +57,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        rootView = inflater.inflate(R.layout.fragment_overview, container, false);
+        rootView = inflater.inflate(R.layout.fragment_home, container, false);
         initView()
         return rootView
     }
