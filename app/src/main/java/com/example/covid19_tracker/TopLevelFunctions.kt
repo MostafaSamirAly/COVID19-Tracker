@@ -17,9 +17,9 @@ fun cornerRadius(value: Int): RequestOptions {
 }
 
 fun dp2px(dp: Float): Int {
-    val context = App.instance
-    val scale = context.resources.displayMetrics.density
-    return (dp * scale + 0.5f).toInt()
+    //val context = App.applicationContext
+    //val scale = context.resources.displayMetrics.density
+    return (dp * 1 + 0.5f).toInt()
 }
 
 

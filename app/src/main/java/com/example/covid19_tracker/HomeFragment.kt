@@ -33,6 +33,7 @@ import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_overview.*
 import kotlinx.android.synthetic.main.item_list.view.*
 import com.example.covid19_tracker.BaseRecyclerViewAdapter
+import com.example.covid19_tracker.model.WorldState
 import com.parassidhu.coronavirusapp.util.*
 import kotlinx.android.synthetic.main.fragment_overview.view.*
 import kotlinx.android.synthetic.main.item_list.view.confirmedCount
@@ -43,6 +44,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     lateinit var recyclerView: RecyclerView
     lateinit var adapter: BaseRecyclerViewAdapter
     private lateinit var viewModel: MainViewModel
+    var worldData: WorldState = WorldState("", "", "")
     var dataList : MutableList<Country> = ArrayList<Country>()
 
     companion object {
@@ -81,8 +83,19 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         super.onViewCreated(view, savedInstanceState)
         showLoading(true)
         setListeners()
+
+        viewModel.getNewWorldData().observe(viewLifecycleOwner, Observer<WorldState> { data ->
+            // update UI
+            if(data != null){
+                worldData = data
+                setupWorldStats(data)
+            }else{
+                println("Error Fetching Data")
+            }
+        })
+
         //viewModel.getNewData().observe(viewLifecycleOwner, Observer<List<Country>> { countries ->
-            //setupWorldStats(countries)
+
         //})
 
         //setupBanner
@@ -90,7 +103,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
 
     private fun initView() {
         initializeRecyclerView()
-        //setupWorldStats(response)
+        //setupWorldStats(worldData)
     }
 
     private fun initializeRecyclerView() {
@@ -137,11 +150,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         }
 
         hamburgerImageView.setOnClickListener {
-            /*AboutPopup.Builder(requireContext())
-                .setGravity(Gravity.CENTER)
-                .setTintColor((Color.parseColor("#80000000")))
-                .build()
-                .show()*/
+            //TODO
         }
     }
 
@@ -176,14 +185,14 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
 
     private fun makeApiCalls() {
         viewModel.getNewData()
-        //viewModel.getWorldStats()
+        viewModel.getNewWorldData()
     }
 
-    fun provideBarWeights(response: Country): Triple<Float?, Float?, Float?> {
+    fun provideBarWeights(response: WorldState): Triple<Float?, Float?, Float?> {
         try {
-            var yellowVal = response.active_cases?.replace(",", "")?.toFloat()
+            var yellowVal = response.total_cases?.replace(",", "")?.toFloat()
             var greenVal = response.total_recovered?.replace(",", "")?.toFloat()
-            var redVal = response.deaths?.replace(",", "")?.toFloat()
+            var redVal = response.total_death?.replace(",", "")?.toFloat()
 
             if (yellowVal != null && greenVal != null && redVal != null) {
                 while (yellowVal > 1f && greenVal > 1f && redVal > 1f) {
@@ -209,6 +218,13 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         }
     }
 
+    fun updateworld(data: WorldState){
+        if (data != null) {
+            worldData = data
+            adapter.notifyDataSetChanged()
+            showLoading(false)
+        }
+    }
     private fun showLoading(flag: Boolean) {
         countryWiseRecyclerView.isVisible = !flag
         toolbarViews.isVisible = !flag
@@ -219,7 +235,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
             shimmerLoading.stop()
     }
 
-    private fun setupWorldStats(response: Country) {
+    private fun setupWorldStats(response: WorldState) {
         val weight = provideBarWeights(response)
 
         Glide.with(this).load(R.drawable.yellow_bar).apply(cornerRadius(2)).into(yellowBar)
@@ -232,10 +248,11 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
 
         barContainer.weightSum = weight.first!! + weight.second!! + weight.third!!
 
+        println(response.total_cases)
         response.apply {
-            confirmedCount.text = cases
-            recoveredCount.text = total_recovered
-            deathCount.text = deaths
+            confirmedCount.text = response.total_cases
+            recoveredCount.text = response.total_recovered
+            deathCount.text = response.total_death
         }
     }
 

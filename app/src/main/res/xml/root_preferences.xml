@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <PreferenceCategory android:title="@string/sync_header">
+
+        <SwitchPreferenceCompat
+            android:key="@string/pref_key_check"
+            android:summary="@string/sync_title"
+            android:title="@string/enable_push_notif" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Others">
+    <Preference
+        app:key="key_sample"
+        app:title="Sample Title"
+        app:summary="This is sample summary" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

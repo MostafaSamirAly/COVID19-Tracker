@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.example.covid19_tracker.App
 import com.example.covid19_tracker.db.CountryDao
 import com.example.covid19_tracker.model.Country
+import com.example.covid19_tracker.model.WorldState
 import com.example.test.model.CountryState
 import com.example.test.retrofit.RetrofitClient
 import retrofit2.Call
@@ -43,9 +44,32 @@ class CountryRepositoryImp(private val countryDao: CountryDao) : CountryReposito
         return data
     }
 
+    override fun getWorldStatsFromAPI(): LiveData<WorldState> {
+
+        var data = MutableLiveData<WorldState>()
+
+        RetrofitClient.instance.getWorldStats().enqueue(object : Callback<WorldState> {
+            override fun onFailure(call: Call<WorldState>?, t: Throwable?) {
+                println("on Failure")
+                data.value = null
+            }
+            override fun onResponse(call: Call<WorldState>?, response: Response<WorldState>?) {
+                if (response != null) {
+                    if (response.isSuccessful)
+                    data.value = response.body()?.copy()
+                    //saveData(response.body()?.countries!!)
+                }
+
+            }
+
+        })
+
+        return data
+    }
+
     override fun saveData(list: List<Country>) {
         for(country in list){
-            println(country.country_name)
+            //println(country.country_name)
             countryDao.insertCountry(country)
         }
     }

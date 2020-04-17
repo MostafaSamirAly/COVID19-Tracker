@@ -15,6 +15,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.example.covid19_tracker.db.CountryDataBase
 import com.example.covid19_tracker.model.Country
+import com.example.covid19_tracker.model.WorldState
 import com.example.covid19_tracker.repository.CountryRepositoryImp
 import com.example.covid19_tracker.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -27,9 +28,6 @@ class MainActivity : AppCompatActivity() {
     private val homeFragment by lazy { HomeFragment() }
     private val settingsFragment by lazy { SettingsFragment() }
 
-    //private val h = HomeFragment.newInstance()
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -39,11 +37,6 @@ class MainActivity : AppCompatActivity() {
 
         /*AboElnaga Start*/
         init()
-        /*
-        if(savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().replace(R.id.homeContainer, homeFragment, HomeFragment.TAG).commit();
-            //HomeFragment.response = viewModel.getNewData()
-        }*/
         /*AboElnaga End*/
     }
 
@@ -54,21 +47,31 @@ class MainActivity : AppCompatActivity() {
                 // update UI
                 if(countries != null){
                     homeFragment.update(countries)
-                    for (country in countries) {
-                        println(country.country_name)
-                        println(country.new_cases)
-                    }
                 }else{
                     println("Error Fetching Data")
                 }
             })
+
+            viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
+                // update UI
+                if(data != null){
+                    //homeFragment.worldData = data
+                    homeFragment.updateworld(data)
+                    println(data.total_cases)
+                    println(data.total_recovered)
+                    println(data.total_death)
+                }else{
+                    println("Error Fetching Data")
+                }
+            })
+
         }else{
             viewModel.getSavedData().observe(this, Observer<List<Country>> { countries ->
                 // update UI
                 if(countries != null){
-                    for (country in countries) {
+                    /*for (country in countries) {
                         println(country.country_name)
-                    }
+                    }*/
                 }else{
                     println("Error Fetching Data")
                 }
