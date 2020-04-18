@@ -69,7 +69,7 @@ class CountryRepositoryImp(private val countryDao: CountryDao) : CountryReposito
         return data
     }
 
-    override fun getWorldStatsFromDB(): LiveData<List<WorldState>> {
+    override fun getWorldStatsFromDB(): LiveData<WorldState> {
         return countryDao.getWorldState()
     }
 

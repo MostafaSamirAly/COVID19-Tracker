@@ -12,11 +12,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.work.*
 import com.example.covid19_tracker.model.Country
 import com.example.covid19_tracker.model.WorldState
 import com.example.covid19_tracker.repository.CountryRepositoryImp
 import com.example.covid19_tracker.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -54,7 +56,34 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Check network connection", Toast.LENGTH_SHORT).show()
                 }
             }
+            if(checkFirstRun()) {
+                setBackGroundSync()
+            }
 
+    }
+
+    private fun setBackGroundSync() {
+
+        //create constraints to attach it to the request
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        //create the request
+        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = 15 , repeatIntervalTimeUnit = TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueue(myRequest)
+
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(myRequest.id)
+            .observe(this, Observer { workInfo ->
+                if(workInfo.state == WorkInfo.State.SUCCEEDED){
+                    viewModel.getNewData()
+                    viewModel.getNewWorldData()
+                }
+
+        })
     }
 
     private fun checkConnectivity(): Boolean {
@@ -74,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
             // update UI
             if(data != null){
-                homeFragment.updateworld(data)
+                homeFragment.setupWorldStats(data)
             }else{
                 println("Error Fetching Data")
             }
@@ -84,7 +113,7 @@ class MainActivity : AppCompatActivity() {
     private fun getWorldRecordsSavedData(){
         viewModel.getSavedWorldState().observe(this, Observer {
             if (it != null){
-                homeFragment.updateworld(it.get(0))
+                homeFragment.setupWorldStats(it)
             }else{
                 Toast.makeText(this,"Error Fetching Data",Toast.LENGTH_LONG).show()
             }
@@ -94,15 +123,15 @@ class MainActivity : AppCompatActivity() {
     private fun getNewData(){
         viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
             // update UI
-            if (countries != null) {
-                val pref = getPreferences(Context.MODE_PRIVATE)
+            if(!checkFirstRun()){
+                val pref =    getPreferences(Context.MODE_PRIVATE)
                 val editor = pref.edit()
                 editor.putBoolean(FIRST_RUN, false)
                 editor.apply()
-                homeFragment.update(countries)
-                for (country in countries) {
-                    println(country.country_name)
-                }
+            }
+            if (countries != null) {
+                var list = countries
+                homeFragment.update(list)
             } else {
                 Toast.makeText(this, "Error Fetching Data", Toast.LENGTH_LONG).show()
             }

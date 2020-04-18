@@ -26,6 +26,6 @@ interface CountryDao {
     fun insertWorldState(worldState : WorldState)
 
     @Query("SELECT * FROM WorldState")
-    fun getWorldState(): LiveData<List<WorldState>>
+    fun getWorldState(): LiveData<WorldState>
 
 }

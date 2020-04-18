@@ -1,5 +1,6 @@
 package com.example.covid19_tracker
 
+import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
@@ -68,15 +69,15 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         showLoading(true)
         setListeners()
 
-        viewModel.getNewWorldData().observe(viewLifecycleOwner, Observer<WorldState> { data ->
-            // update UI
-            if(data != null){
-                worldData = data
-                setupWorldStats(data)
-            }else{
-                Toast.makeText(context,"Error Fetching Data",Toast.LENGTH_LONG).show()
-            }
-        })
+//        viewModel.getNewWorldData().observe(viewLifecycleOwner, Observer<WorldState> { data ->
+//            // update UI
+//            if(data != null){
+//                worldData = data
+//               setupWorldStats(data)
+//            }else{
+//                Toast.makeText(context,"Error Fetching Data",Toast.LENGTH_LONG).show()
+//            }
+//        })
 
         //viewModel.getNewData().observe(viewLifecycleOwner, Observer<List<Country>> { countries ->
 
@@ -195,9 +196,17 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
 
     fun update(countries: List<Country>){
         if (countries.isNotEmpty()) {
+            val pref = activity?.getSharedPreferences("sub_country",Context.MODE_PRIVATE)
+            val str = pref?.getString("country","n/a")
             dataList.clear()
-            dataList.addAll(countries)
-            adapter.notifyDataSetChanged()
+            for(country in countries){
+                if (country.country_name.equals(str,true)){
+                    dataList.add(0,country)
+                }else{
+                    dataList.add(country)
+                }
+            }
+            adapter.setCovid(dataList)
             showLoading(false)
         }
     }
@@ -219,7 +228,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
             shimmerLoading.stop()
     }
 
-    private fun setupWorldStats(response: WorldState) {
+     fun setupWorldStats(response: WorldState) {
         val weight = provideBarWeights(response)
 
         Glide.with(this).load(R.drawable.yellow_bar).apply(cornerRadius(2)).into(yellowBar)

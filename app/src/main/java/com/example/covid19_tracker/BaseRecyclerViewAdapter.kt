@@ -1,24 +1,34 @@
 package com.example.covid19_tracker
 
 import android.content.Context
+import android.opengl.Visibility
 import android.os.Handler
 import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import com.example.covid19_tracker.model.Country
 
-  class BaseRecyclerViewAdapter(private var dataList: List<Country>, private val context: Context?, private val listener: OnEvent) : RecyclerView.Adapter<BaseRecyclerViewAdapter.ViewHolder>(),
+  class BaseRecyclerViewAdapter(private var dataList: MutableList<Country>, private val context: Context?, private val listener: OnEvent) : RecyclerView.Adapter<BaseRecyclerViewAdapter.ViewHolder>(),
     Filterable {
-    lateinit var dataCopy: MutableList<Country>
+      var dataCopy: MutableList<Country>
+      var subscribeFlag = false
+      var subCountry : String? = null
 
      init {
         dataCopy = ArrayList(dataList)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val pref = context?.getSharedPreferences("sub_country", Context.MODE_PRIVATE)
+        subCountry = pref?.getString("country" , "n/a")
+        if(!subCountry.equals("n/a")){
+            subscribeFlag = true
+        }
         return ViewHolder(
             LayoutInflater.from(context).inflate(
                 R.layout.item_list,
@@ -34,13 +44,36 @@ import com.example.covid19_tracker.model.Country
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val covidModel = dataList.get(position)
-
         holder.countryTextView.text = covidModel.country_name
-
         holder.casesTextView.text = covidModel.cases
         holder.deathsTextView.text = covidModel.deaths
         holder.recoveredTextView.text = covidModel.total_recovered
         holder.newcasesTextView.text = covidModel.new_cases
+
+        if (subscribeFlag ){
+            if (!subCountry.equals(covidModel.country_name,ignoreCase = true)){
+                holder.pinImageView.visibility = INVISIBLE
+            }
+        }else{
+            holder.pinImageView.visibility = VISIBLE
+        }
+
+        holder.pinImageView.setOnClickListener(View.OnClickListener {
+            val pref = context?.getSharedPreferences("sub_country", Context.MODE_PRIVATE)
+            val editor = pref?.edit()
+            if (subscribeFlag){
+                subscribeFlag = false
+                editor?.clear()
+                editor?.apply()
+            }else {
+                editor?.putString("country", covidModel.country_name)
+                editor?.apply()
+                dataList.removeAt(position)
+                dataList.add(0,covidModel)
+            }
+
+            notifyDataSetChanged()
+        })
     }
 
 
@@ -55,6 +88,8 @@ import com.example.covid19_tracker.model.Country
         lateinit var deathsTextView: TextView
         lateinit var recoveredTextView: TextView
         lateinit var newcasesTextView: TextView
+        lateinit var pinImageView: ImageView
+
 
         init {
             countryTextView = itemLayoutView.findViewById(R.id.countryName)
@@ -62,15 +97,16 @@ import com.example.covid19_tracker.model.Country
             deathsTextView = itemLayoutView.findViewById(R.id.deathCount)
             recoveredTextView = itemLayoutView.findViewById(R.id.recoveredCount)
             newcasesTextView = itemLayoutView.findViewById(R.id.newCasesCount)
+            pinImageView = itemLayoutView.findViewById(R.id.pinImageView)
+
 
 
         }
     }
 
      fun clear() {
+         dataList.clear()
          dataCopy.clear()
-         dataCopy.clear()
-         notifyDataSetChanged()
      }
 
      fun search(query: String) {

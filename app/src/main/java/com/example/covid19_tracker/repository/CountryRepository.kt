@@ -12,7 +12,7 @@ interface CountryRepository {
 
     fun getWorldStatsFromAPI() : LiveData<WorldState>
 
-    fun getWorldStatsFromDB() : LiveData<List<WorldState>>
+    fun getWorldStatsFromDB() : LiveData<WorldState>
 
     fun saveData(list : List<Country>)
 
