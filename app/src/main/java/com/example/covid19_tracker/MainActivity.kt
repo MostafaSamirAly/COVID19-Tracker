@@ -12,11 +12,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.work.*
 import com.example.covid19_tracker.model.Country
 import com.example.covid19_tracker.model.WorldState
 import com.example.covid19_tracker.repository.CountryRepositoryImp
 import com.example.covid19_tracker.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -42,50 +44,45 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (checkFirstRun()) {
-            if (checkConnectivity()) {
-                viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
-                    // update UI
-                    if (countries != null) {
-                        homeFragment.update(countries)
-                        val pref = getPreferences(Context.MODE_PRIVATE)
-                        val editor = pref.edit()
-                        editor.putBoolean(FIRST_RUN, true)
-                        editor.apply()
-                        for (country in countries) {
-                            println(country.country_name)
-                        }
-                    } else {
-                        Toast.makeText(this, "Error Fetching Data", Toast.LENGTH_LONG).show()
-                    }
-                })
-            } else {
-                Toast.makeText(this, "Please Check Internet Connection", Toast.LENGTH_LONG).show()
+            if(checkConnectivity()){
+                getNewData()
+                getNewWorldRecords()
+            }else{
+                if (checkFirstRun()){
+                    Toast.makeText(this,"Internet Connection is a must in first time , restart app",Toast.LENGTH_LONG).show()
+                }else{
+                    getSavedData()
+                    getWorldRecordsSavedData()
+                    Toast.makeText(this, "Check network connection", Toast.LENGTH_SHORT).show()
+                }
             }
-        } else {
-            viewModel.getSavedData().observe(this, Observer<List<Country>> { countries ->
-                // update UI
-                if(countries != null){
-                    homeFragment.update(countries)
-                    /*for (country in countries) {
-                        println(country.country_name)
-                    }*/
-                } else {
-                    Toast.makeText(this, "Please Check Internet Connection", Toast.LENGTH_LONG).show()
+            if(checkFirstRun()) {
+                setBackGroundSync()
+            }
+
+    }
+
+    private fun setBackGroundSync() {
+
+        //create constraints to attach it to the request
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        //create the request
+        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = 15 , repeatIntervalTimeUnit = TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueue(myRequest)
+
+        WorkManager.getInstance(this).getWorkInfoByIdLiveData(myRequest.id)
+            .observe(this, Observer { workInfo ->
+                if(workInfo.state == WorkInfo.State.SUCCEEDED){
+                    viewModel.getNewData()
+                    viewModel.getNewWorldData()
                 }
 
-            })
-        }
-        viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
-            // update UI
-            if(data != null){
-                homeFragment.updateworld(data)
-                println(data.total_cases)
-                println(data.total_recovered)
-                println(data.total_death)
-            }else{
-                println("Error Fetching Data")
-            }
         })
     }
 
@@ -94,16 +91,64 @@ class MainActivity : AppCompatActivity() {
             getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val activeNetwork = connectivityManager.activeNetworkInfo
         val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
-        if (!isConnected) {
-            Toast.makeText(this, "Check network connection", Toast.LENGTH_SHORT).show()
-        }
         return isConnected
     }
 
     private fun checkFirstRun(): Boolean {
         val pref = getPreferences(Context.MODE_PRIVATE)
-        val isFirstRun = pref.getBoolean(FIRST_RUN, false)
+        val isFirstRun = pref.getBoolean(FIRST_RUN, true)
         return isFirstRun
+    }
+    private  fun getNewWorldRecords(){
+        viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
+            // update UI
+            if(data != null){
+                homeFragment.setupWorldStats(data)
+            }else{
+                println("Error Fetching Data")
+            }
+        })
+    }
+
+    private fun getWorldRecordsSavedData(){
+        viewModel.getSavedWorldState().observe(this, Observer {
+            if (it != null){
+                homeFragment.setupWorldStats(it)
+            }else{
+                Toast.makeText(this,"Error Fetching Data",Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun getNewData(){
+        viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
+            // update UI
+            if(!checkFirstRun()){
+                val pref =    getPreferences(Context.MODE_PRIVATE)
+                val editor = pref.edit()
+                editor.putBoolean(FIRST_RUN, false)
+                editor.apply()
+            }
+            if (countries != null) {
+                var list = countries
+                homeFragment.update(list)
+            } else {
+                Toast.makeText(this, "Error Fetching Data", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun getSavedData(){
+
+        viewModel.getSavedData().observe(this, Observer<List<Country>> { countries ->
+            // update UI
+            if(countries != null){
+                homeFragment.update(countries)
+            } else {
+                Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show()
+            }
+
+        })
     }
 
     /*Mostafa End*/

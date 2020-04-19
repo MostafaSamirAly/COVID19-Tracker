@@ -55,9 +55,11 @@ class CountryRepositoryImp(private val countryDao: CountryDao) : CountryReposito
             }
             override fun onResponse(call: Call<WorldState>?, response: Response<WorldState>?) {
                 if (response != null) {
-                    if (response.isSuccessful)
-                    data.value = response.body()?.copy()
-                    //saveData(response.body()?.countries!!)
+                    if (response.isSuccessful) {
+                        data.value = response.body()?.copy()
+                        val worldState = data.value
+                        saveWorldState(worldState!!)
+                    }
                 }
 
             }
@@ -67,10 +69,17 @@ class CountryRepositoryImp(private val countryDao: CountryDao) : CountryReposito
         return data
     }
 
+    override fun getWorldStatsFromDB(): LiveData<WorldState> {
+        return countryDao.getWorldState()
+    }
+
     override fun saveData(list: List<Country>) {
         for(country in list){
-            //println(country.country_name)
             countryDao.insertCountry(country)
         }
+    }
+
+    override fun saveWorldState(worldState: WorldState) {
+        countryDao.insertWorldState(worldState)
     }
 }
