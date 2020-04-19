@@ -206,7 +206,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
                     dataList.add(country)
                 }
             }
-            adapter.setCovid(dataList)
+            adapter.setCovid(countries)
             showLoading(false)
         }
     }

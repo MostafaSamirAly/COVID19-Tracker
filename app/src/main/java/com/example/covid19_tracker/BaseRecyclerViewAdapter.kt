@@ -15,13 +15,13 @@ import com.example.covid19_tracker.model.Country
 
   class BaseRecyclerViewAdapter(private var dataList: MutableList<Country>, private val context: Context?, private val listener: OnEvent) : RecyclerView.Adapter<BaseRecyclerViewAdapter.ViewHolder>(),
     Filterable {
-      var dataCopy: MutableList<Country>
+      var dataCopy = mutableListOf<Country>()
       var subscribeFlag = false
       var subCountry : String? = null
-
+/*
      init {
         dataCopy = ArrayList(dataList)
-    }
+    }*/
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val pref = context?.getSharedPreferences("sub_country", Context.MODE_PRIVATE)
@@ -44,6 +44,8 @@ import com.example.covid19_tracker.model.Country
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val covidModel = dataList.get(position)
+        //holder.rowNumberTextView.text = (dataList.indexOf(covidModel) + 1).toString()
+        holder.rowNumberTextView.text = (holder.adapterPosition + 1).toString()
         holder.countryTextView.text = covidModel.country_name
         holder.casesTextView.text = covidModel.cases
         holder.deathsTextView.text = covidModel.deaths
@@ -77,12 +79,14 @@ import com.example.covid19_tracker.model.Country
     }
 
 
-    internal fun setCovid(dataLists: MutableList<Country>) {
-        this.dataList = dataLists
+    internal fun setCovid(dataLists: List<Country>) {
+        dataList.addAll(dataLists)
+        dataCopy.addAll(dataLists)
         notifyDataSetChanged()
     }
 
     class ViewHolder(itemLayoutView: View) : RecyclerView.ViewHolder(itemLayoutView) {
+        lateinit var rowNumberTextView: TextView
         lateinit var countryTextView: TextView
         lateinit var casesTextView: TextView
         lateinit var deathsTextView: TextView
@@ -92,6 +96,7 @@ import com.example.covid19_tracker.model.Country
 
 
         init {
+            rowNumberTextView = itemLayoutView.findViewById(R.id.rowNumber)
             countryTextView = itemLayoutView.findViewById(R.id.countryName)
             casesTextView = itemLayoutView.findViewById(R.id.confirmedCount)
             deathsTextView = itemLayoutView.findViewById(R.id.deathCount)
@@ -110,18 +115,18 @@ import com.example.covid19_tracker.model.Country
      }
 
      fun search(query: String) {
-         dataCopy.clear()
-         this.dataCopy.addAll(dataList)
+         dataList.clear()
+         this.dataList.addAll(dataCopy)
 
          if (query.isNotEmpty()) {
              var index = 0
 
-             while (index < dataCopy.size) {
-                 val item = dataCopy[index]
+             while (index < dataList.size) {
+                 val item = dataList[index]
                  val text = item.country_name
 
                  if (text.toLowerCase().contains(query.toLowerCase()).not()) {
-                     dataCopy.removeAt(index)
+                     dataList.removeAt(index)
                      index--
                  }
                  index++

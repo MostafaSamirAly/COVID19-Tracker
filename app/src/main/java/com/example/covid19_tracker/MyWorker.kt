@@ -30,7 +30,7 @@ class MyWorker(appContext: Context, workerParameters: WorkerParameters) :
         var builder = NotificationCompat.Builder(applicationContext, "notification")
             .setContentTitle(title)
             .setContentText(desc)
-            .setSmallIcon(R.mipmap.ic_launcher_round)
+            .setSmallIcon(R.mipmap.ic_corona_logo_round)
         manager.notify(100, builder.build())
     }
 }

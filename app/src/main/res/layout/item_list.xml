@@ -18,17 +18,31 @@
         android:layout_height="match_parent">
 
         <TextView
+            android:id="@+id/rowNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="15dp"
+            android:fontFamily="@font/montserrat_medium"
+            android:textColor="@color/yellow"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@+id/countryName"
+            app:layout_constraintStart_toEndOf="@+id/imageView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="1" />
+
+        <TextView
             android:id="@+id/countryName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="15dp"
-            android:layout_marginTop="15dp"
+            android:layout_marginStart="5dp"
             android:textColor="@color/white"
             android:textSize="14sp"
             android:fontFamily="@font/helvetica"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="CHINA" />
+            app:layout_constraintStart_toEndOf="@+id/rowNumber"
+            app:layout_constraintTop_toTopOf="@+id/rowNumber"
+            tools:text="Egypt" />
 
         <ImageView
             android:id="@+id/imageView"
