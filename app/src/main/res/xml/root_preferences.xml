@@ -11,6 +11,19 @@
             android:title="@string/enable_push_notif" />
     </PreferenceCategory>
 
+    <PreferenceCategory android:title="Update Setting"
+        android:key="pref_update">
+
+        <DropDownPreference
+
+            app:useSimpleSummaryProvider="true"
+            android:key="pref_update_setting"
+            android:title="@string/choose_update"
+            android:entries="@array/update_choices"
+            android:entryValues="@array/update_choices" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="Others">
     <Preference
         app:key="key_sample"

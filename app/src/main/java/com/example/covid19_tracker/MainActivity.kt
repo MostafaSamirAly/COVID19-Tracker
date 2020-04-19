@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         /*Mostafa Start*/
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        setBackGroundSync()
         /*Mostafa End*/
 
         /*AboElnaga Start*/
@@ -56,9 +57,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this, "Check network connection", Toast.LENGTH_SHORT).show()
                 }
             }
-            if(checkFirstRun()) {
-                setBackGroundSync()
-            }
+
 
     }
 
@@ -70,11 +69,10 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         //create the request
-        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = 15 , repeatIntervalTimeUnit = TimeUnit.MINUTES)
+        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = 1 , repeatIntervalTimeUnit = TimeUnit.HOURS)
             .setConstraints(constraints)
             .build()
-
-        WorkManager.getInstance(this).enqueue(myRequest)
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork("update",ExistingPeriodicWorkPolicy.KEEP,myRequest)
 
         WorkManager.getInstance(this).getWorkInfoByIdLiveData(myRequest.id)
             .observe(this, Observer { workInfo ->
@@ -96,7 +94,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkFirstRun(): Boolean {
         val pref = getPreferences(Context.MODE_PRIVATE)
-        val isFirstRun = pref.getBoolean(FIRST_RUN, true)
+        val isFirstRun = pref.getBoolean(FIRST_RUN, false)
         return isFirstRun
     }
     private  fun getNewWorldRecords(){
@@ -131,7 +129,10 @@ class MainActivity : AppCompatActivity() {
             }
             if (countries != null) {
                 var list = countries
+                homeFragment.adapter.clear()
                 homeFragment.update(list)
+                println("new data")
+                homeFragment.adapter.notifyDataSetChanged()
             } else {
                 Toast.makeText(this, "Error Fetching Data", Toast.LENGTH_LONG).show()
             }

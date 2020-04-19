@@ -13,6 +13,7 @@ import androidx.work.WorkerParameters
 
 class MyWorker(appContext: Context, workerParameters: WorkerParameters) :
     Worker(appContext, workerParameters) {
+
     override fun doWork(): Result {
         val desc = "Check Updates About COVID-19"
         showNotification("CORONA", desc!!)
