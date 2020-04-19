@@ -16,7 +16,7 @@ class MyWorker(appContext: Context, workerParameters: WorkerParameters) :
 
     override fun doWork(): Result {
         val desc = "Check Updates About COVID-19"
-        showNotification("CORONA", desc!!)
+        showNotification("Stay Home", desc!!)
         return Result.success()
     }
 

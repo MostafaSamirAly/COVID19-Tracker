@@ -34,7 +34,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         /*Mostafa Start*/
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        setBackGroundSync()
+        if (checkFirstRun()){
+            setBackGroundSync()
+        }
+
         /*Mostafa End*/
 
         /*AboElnaga Start*/
@@ -76,7 +79,7 @@ class MainActivity : AppCompatActivity() {
 
         WorkManager.getInstance(this).getWorkInfoByIdLiveData(myRequest.id)
             .observe(this, Observer { workInfo ->
-                if(workInfo.state == WorkInfo.State.SUCCEEDED){
+                if(workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED){
                     viewModel.getNewData()
                     viewModel.getNewWorldData()
                 }
@@ -94,7 +97,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkFirstRun(): Boolean {
         val pref = getPreferences(Context.MODE_PRIVATE)
-        val isFirstRun = pref.getBoolean(FIRST_RUN, false)
+        val isFirstRun = pref.getBoolean(FIRST_RUN, true)
         return isFirstRun
     }
     private  fun getNewWorldRecords(){
