@@ -47,11 +47,11 @@ class MainActivity : AppCompatActivity() {
                 viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
                     // update UI
                     if (countries != null) {
+                        homeFragment.update(countries)
                         val pref = getPreferences(Context.MODE_PRIVATE)
                         val editor = pref.edit()
                         editor.putBoolean(FIRST_RUN, true)
                         editor.apply()
-                        homeFragment.update(countries)
                         for (country in countries) {
                             println(country.country_name)
                         }
@@ -66,6 +66,7 @@ class MainActivity : AppCompatActivity() {
             viewModel.getSavedData().observe(this, Observer<List<Country>> { countries ->
                 // update UI
                 if(countries != null){
+                    homeFragment.update(countries)
                     /*for (country in countries) {
                         println(country.country_name)
                     }*/
@@ -78,7 +79,6 @@ class MainActivity : AppCompatActivity() {
         viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
             // update UI
             if(data != null){
-                //homeFragment.worldData = data
                 homeFragment.updateworld(data)
                 println(data.total_cases)
                 println(data.total_recovered)
