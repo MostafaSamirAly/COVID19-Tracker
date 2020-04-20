@@ -27,16 +27,14 @@ class MainActivity : AppCompatActivity() {
 
     private val homeFragment by lazy { HomeFragment() }
     private val settingsFragment by lazy { SettingsFragment() }
-    private val FIRST_RUN = "first_run_flag"
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         /*Mostafa Start*/
-        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        if (checkFirstRun()){
-            setBackGroundSync()
-        }
+        //viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+
 
         /*Mostafa End*/
 
@@ -48,112 +46,11 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-            if(checkConnectivity()){
-                getNewData()
-                getNewWorldRecords()
-            }else{
-                if (checkFirstRun()){
-                    Toast.makeText(this,"Internet Connection is a must in first time , restart app",Toast.LENGTH_LONG).show()
-                }else{
-                    getSavedData()
-                    getWorldRecordsSavedData()
-                    Toast.makeText(this, "Check network connection", Toast.LENGTH_SHORT).show()
-                }
-            }
 
 
     }
 
-    private fun setBackGroundSync() {
 
-        //create constraints to attach it to the request
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        //create the request
-        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = 1 , repeatIntervalTimeUnit = TimeUnit.HOURS)
-            .setConstraints(constraints)
-            .build()
-        WorkManager.getInstance(this).enqueueUniquePeriodicWork("update",ExistingPeriodicWorkPolicy.KEEP,myRequest)
-
-        WorkManager.getInstance(this).getWorkInfoByIdLiveData(myRequest.id)
-            .observe(this, Observer { workInfo ->
-                if(workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED){
-                    viewModel.getNewData()
-                    viewModel.getNewWorldData()
-                }
-
-        })
-    }
-
-    private fun checkConnectivity(): Boolean {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetworkInfo
-        val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
-        return isConnected
-    }
-
-    private fun checkFirstRun(): Boolean {
-        val pref = getPreferences(Context.MODE_PRIVATE)
-        val isFirstRun = pref.getBoolean(FIRST_RUN, true)
-        return isFirstRun
-    }
-    private  fun getNewWorldRecords(){
-        viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
-            // update UI
-            if(data != null){
-                homeFragment.setupWorldStats(data)
-            }else{
-                println("Error Fetching Data")
-            }
-        })
-    }
-
-    private fun getWorldRecordsSavedData(){
-        viewModel.getSavedWorldState().observe(this, Observer {
-            if (it != null){
-                homeFragment.setupWorldStats(it)
-            }else{
-                Toast.makeText(this,"Error Fetching Data",Toast.LENGTH_LONG).show()
-            }
-        })
-    }
-
-    private fun getNewData(){
-        viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
-            // update UI
-            if(!checkFirstRun()){
-                val pref =    getPreferences(Context.MODE_PRIVATE)
-                val editor = pref.edit()
-                editor.putBoolean(FIRST_RUN, false)
-                editor.apply()
-            }
-            if (countries != null) {
-                var list = countries
-                homeFragment.adapter.clear()
-                homeFragment.update(list)
-                println("new data")
-                homeFragment.adapter.notifyDataSetChanged()
-            } else {
-                Toast.makeText(this, "Error Fetching Data", Toast.LENGTH_LONG).show()
-            }
-        })
-    }
-
-    private fun getSavedData(){
-
-        viewModel.getSavedData().observe(this, Observer<List<Country>> { countries ->
-            // update UI
-            if(countries != null){
-                homeFragment.update(countries)
-            } else {
-                Toast.makeText(this, "Error Occured", Toast.LENGTH_LONG).show()
-            }
-
-        })
-    }
 
     /*Mostafa End*/
 

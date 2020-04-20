@@ -1,6 +1,7 @@
 package com.example.covid19_tracker
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.text.Editable
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.*
 import com.bumptech.glide.Glide
 import com.example.covid19_tracker.model.Country
 import com.example.covid19_tracker.viewmodel.MainViewModel
@@ -22,6 +24,7 @@ import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_home.*
 import com.example.covid19_tracker.model.WorldState
 import com.parassidhu.coronavirusapp.util.*
+import java.util.concurrent.TimeUnit
 
 class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecyclerViewAdapter.OnEvent {
 
@@ -31,6 +34,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     private lateinit var viewModel: MainViewModel
     var worldData: WorldState = WorldState(100, "", "","")
     var dataList : MutableList<Country> = ArrayList<Country>()
+    private val FIRST_RUN = "first_run_flag"
 
     companion object {
         var TAG = HomeFragment::class.java.simpleName
@@ -47,6 +51,9 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
+        if (checkFirstRun()){
+            setBackGroundSync()
+        }
         onCreateComponent()
     }
 
@@ -97,6 +104,23 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         recyclerView.adapter = adapter
     }
 
+    override fun onStart() {
+        super.onStart()
+        if(checkConnectivity()){
+            getNewData()
+            getNewWorldRecords()
+        }else{
+            if (checkFirstRun()){
+                Toast.makeText(context,"Internet Connection is a must in first time , restart app",Toast.LENGTH_LONG).show()
+            }else{
+                getSavedData()
+                getWorldRecordsSavedData()
+                Toast.makeText(context, "Check network connection", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
     override fun onResume() {
         super.onResume()
         appBarLayout?.addOnOffsetChangedListener(this)
@@ -131,6 +155,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         swipeToRefresh.setOnRefreshListener {
             adapter.clear()
             makeApiCalls()
+            adapter.notifyDataSetChanged()
             swipeToRefresh.isRefreshing = false
         }
 
@@ -252,5 +277,97 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     override fun logEvent(query: String) {
         val params = Bundle()
         params.putString("query", query)
+    }
+
+    private fun setBackGroundSync() {
+
+        //create constraints to attach it to the request
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        //create the request
+        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = 1 , repeatIntervalTimeUnit = TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("update",
+            ExistingPeriodicWorkPolicy.KEEP,myRequest)
+
+        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(myRequest.id)
+            .observe(this, Observer { workInfo ->
+                if(workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED){
+                    viewModel.getNewData()
+                    viewModel.getNewWorldData()
+                }
+
+            })
+    }
+
+    private fun checkConnectivity(): Boolean {
+        val connectivityManager =
+            context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetwork = connectivityManager.activeNetworkInfo
+        val isConnected = activeNetwork != null && activeNetwork.isConnectedOrConnecting
+        return isConnected
+    }
+
+    private fun checkFirstRun(): Boolean {
+        val pref = activity?.getPreferences(Context.MODE_PRIVATE)
+        val isFirstRun = pref?.getBoolean(FIRST_RUN, true)
+        return isFirstRun!!
+    }
+    private  fun getNewWorldRecords(){
+        viewModel.getNewWorldData().observe(this, Observer<WorldState> { data ->
+            // update UI
+            if(data != null){
+                setupWorldStats(data)
+            }else{
+                println("Error Fetching Data")
+            }
+        })
+    }
+
+    private fun getWorldRecordsSavedData(){
+        viewModel.getSavedWorldState().observe(this, Observer {
+            if (it != null){
+                setupWorldStats(it)
+            }else{
+                Toast.makeText(context,"Error Fetching Data",Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun getNewData(){
+        viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
+            // update UI
+            if(!checkFirstRun()){
+                val pref =    activity?.getPreferences(Context.MODE_PRIVATE)
+                val editor = pref?.edit()
+                editor?.putBoolean(FIRST_RUN, false)
+                editor?.apply()
+            }
+            if (countries != null) {
+                var list = countries
+                adapter.clear()
+                update(list)
+                println("new data")
+                adapter.notifyDataSetChanged()
+            } else {
+                Toast.makeText(context, "Error Fetching Data", Toast.LENGTH_LONG).show()
+            }
+        })
+    }
+
+    private fun getSavedData(){
+
+        viewModel.getSavedData().observe(this, Observer<List<Country>> { countries ->
+            // update UI
+            if(countries != null){
+                update(countries)
+            } else {
+                Toast.makeText(context, "Error Occured", Toast.LENGTH_LONG).show()
+            }
+
+        })
     }
 }

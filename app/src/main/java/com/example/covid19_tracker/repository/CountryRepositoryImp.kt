@@ -56,6 +56,8 @@ class CountryRepositoryImp(private val countryDao: CountryDao) : CountryReposito
             override fun onResponse(call: Call<WorldState>?, response: Response<WorldState>?) {
                 if (response != null) {
                     if (response.isSuccessful) {
+                        println("on Response")
+
                         data.value = response.body()?.copy()
                         val worldState = data.value
                         saveWorldState(worldState!!)
