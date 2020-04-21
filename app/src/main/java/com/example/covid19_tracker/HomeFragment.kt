@@ -75,22 +75,6 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         super.onViewCreated(view, savedInstanceState)
         showLoading(true)
         setListeners()
-
-//        viewModel.getNewWorldData().observe(viewLifecycleOwner, Observer<WorldState> { data ->
-//            // update UI
-//            if(data != null){
-//                worldData = data
-//               setupWorldStats(data)
-//            }else{
-//                Toast.makeText(context,"Error Fetching Data",Toast.LENGTH_LONG).show()
-//            }
-//        })
-
-        //viewModel.getNewData().observe(viewLifecycleOwner, Observer<List<Country>> { countries ->
-
-        //})
-
-        //setupBanner
     }
 
     private fun initView() {
@@ -153,10 +137,16 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         }
 
         swipeToRefresh.setOnRefreshListener {
-            adapter.clear()
-            makeApiCalls()
-            adapter.notifyDataSetChanged()
+            if(checkConnectivity()){
+                adapter.clear()
+                makeApiCalls()
+                adapter.notifyDataSetChanged()
+
+            }else{
+                Toast.makeText(context,"No Internet Connection",Toast.LENGTH_LONG).show()
+            }
             swipeToRefresh.isRefreshing = false
+
         }
 
         hamburgerImageView.setOnClickListener {
@@ -194,8 +184,8 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     }
 
     private fun makeApiCalls() {
-        viewModel.getNewData()
-        viewModel.getNewWorldData()
+       getNewData()
+        getNewWorldRecords()
     }
 
     fun provideBarWeights(response: WorldState): Triple<Float?, Float?, Float?> {
@@ -236,13 +226,13 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         }
     }
 
-    fun updateworld(data: WorldState){
-        if (data != null) {
-            worldData = data
-            adapter.notifyDataSetChanged()
-            showLoading(false)
-        }
-    }
+//    fun updateworld(data: WorldState){
+//        if (data != null) {
+//            worldData = data
+//            adapter.notifyDataSetChanged()
+//            showLoading(false)
+//        }
+//    }
     private fun showLoading(flag: Boolean) {
         countryWiseRecyclerView.isVisible = !flag
         toolbarViews.isVisible = !flag
@@ -340,7 +330,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     private fun getNewData(){
         viewModel.getNewData().observe(this, Observer<List<Country>> { countries ->
             // update UI
-            if(!checkFirstRun()){
+            if(checkFirstRun()){
                 val pref =    activity?.getPreferences(Context.MODE_PRIVATE)
                 val editor = pref?.edit()
                 editor?.putBoolean(FIRST_RUN, false)

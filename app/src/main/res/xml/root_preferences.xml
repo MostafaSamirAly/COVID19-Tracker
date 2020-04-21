@@ -3,13 +3,24 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     >
-    <PreferenceCategory android:title="@string/sync_header">
+    <!--
+            <PreferenceCategory android:title="@string/sync_header">
 
         <SwitchPreferenceCompat
             android:key="@string/pref_key_check"
             android:summary="@string/sync_title"
-            android:title="@string/enable_push_notif" />
+            android:title="@string/enable_push_notif"
+            android:defaultValue="true"/>
     </PreferenceCategory>
+
+     <PreferenceCategory android:title="Others">
+    <Preference
+        app:key="key_sample"
+        app:title="Sample Title"
+        app:summary="This is sample summary" />
+    </PreferenceCategory>
+    -->
+
 
     <PreferenceCategory android:title="Update Setting">
 
@@ -23,11 +34,6 @@
 
     </PreferenceCategory>
 
-    <PreferenceCategory android:title="Others">
-    <Preference
-        app:key="key_sample"
-        app:title="Sample Title"
-        app:summary="This is sample summary" />
-    </PreferenceCategory>
+
 
 </PreferenceScreen>

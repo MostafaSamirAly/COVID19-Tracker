@@ -27,7 +27,6 @@ class CountryRepositoryImp(private val countryDao: CountryDao) : CountryReposito
 
          RetrofitClient.instance.getCountries().enqueue(object : Callback<CountryState> {
             override fun onFailure(call: Call<CountryState>?, t: Throwable?) {
-                println("on Failure")
                 data.value = null
             }
             override fun onResponse(call: Call<CountryState>?, response: Response<CountryState>?) {
@@ -50,14 +49,11 @@ class CountryRepositoryImp(private val countryDao: CountryDao) : CountryReposito
 
         RetrofitClient.instance.getWorldStats().enqueue(object : Callback<WorldState> {
             override fun onFailure(call: Call<WorldState>?, t: Throwable?) {
-                println("on Failure")
                 data.value = null
             }
             override fun onResponse(call: Call<WorldState>?, response: Response<WorldState>?) {
                 if (response != null) {
                     if (response.isSuccessful) {
-                        println("on Response")
-
                         data.value = response.body()?.copy()
                         val worldState = data.value
                         saveWorldState(worldState!!)

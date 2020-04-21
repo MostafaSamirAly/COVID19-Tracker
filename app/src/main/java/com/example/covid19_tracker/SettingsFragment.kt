@@ -40,22 +40,24 @@ class SettingsFragment : PreferenceFragmentCompat() {
             setPreferencesFromResource(R.xml.root_preferences,rootKey)
             viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
             // Get the switch preference
-            val switchNotify: SwitchPreferenceCompat? = findPreference("pref_key_check")
+//            val switchNotify: SwitchPreferenceCompat? = findPreference("pref_key_check")
+//
+//            // Switch preference change listener
+//            switchNotify?.setOnPreferenceChangeListener{ preference, newValue ->
+//                if (newValue == true){
+//                    Toast.makeText(activity,"enabled",Toast.LENGTH_LONG).show()
+//                }else{
+//                    Toast.makeText(activity,"disabled",Toast.LENGTH_LONG).show()
+//                }
+//
+//                true
+//            }
 
-            // Switch preference change listener
-            switchNotify?.setOnPreferenceChangeListener{ preference, newValue ->
-                if (newValue == true){
-                    Toast.makeText(activity,"enabled",Toast.LENGTH_LONG).show()
-                }else{
-                    Toast.makeText(activity,"disabled",Toast.LENGTH_LONG).show()
-                }
-
-                true
-            }
             val update = findPreference<DropDownPreference>("pref_update")
             update?.setOnPreferenceChangeListener { preference, newValue ->
                 var index: Long? = null
                 when(newValue){
+                    "No Alert" -> index = null
                     "Every 1 Hour" -> index = 1
                     "Every 6 Hours" -> index = 6
                     "Every 12 Hours" -> index = 12
@@ -73,23 +75,30 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun setBackGroundSync(interval : Long) {
 
-        //create constraints to attach it to the request
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
+        if (interval != null){
 
-        //create the request
-        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = interval , repeatIntervalTimeUnit = TimeUnit.HOURS)
-            .setConstraints(constraints)
-            .build()
-        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("update",
-            ExistingPeriodicWorkPolicy.REPLACE,myRequest)
+            //create constraints to attach it to the request
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
 
-        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(myRequest.id)
-            .observe(this, Observer {
+            //create the request
+            val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = interval , repeatIntervalTimeUnit = TimeUnit.HOURS)
+                .setConstraints(constraints)
+                .build()
+            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("update",
+                ExistingPeriodicWorkPolicy.REPLACE,myRequest)
+
+            WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(myRequest.id)
+                .observe(this, Observer {
                     Toast.makeText(activity,"you will be notified every $interval hour(s)",Toast.LENGTH_SHORT).show()
                     viewModel.getNewWorldData()
                     viewModel.getNewData()
-            })
+                })
+        }else{
+            WorkManager.getInstance(requireContext()).cancelUniqueWork("update")
+            Toast.makeText(activity,"you will not be notified",Toast.LENGTH_SHORT).show()
+        }
+
     }
 }

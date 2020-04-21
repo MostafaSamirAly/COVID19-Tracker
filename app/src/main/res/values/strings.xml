@@ -34,6 +34,7 @@
         <item name="six_hours">Every 6 Hours</item>
         <item name="twelve_hours">Every 12 Hours</item>
         <item name="twenty_four_hours">Every 24 Hours</item>
+        <item name="no_Alert">No Alert</item>
     </string-array>
 
 </resources>
