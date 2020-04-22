@@ -295,7 +295,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener,
             if (it != null){
                 setupWorldStats(it)
             }else{
-                Toast.makeText(context,"Error Fetching Data",Toast.LENGTH_LONG).show()
+                getWorldRecordsSavedData()
             }
         })
     }
@@ -315,7 +315,8 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener,
                 update(list)
                 adapter.notifyDataSetChanged()
             } else {
-                Toast.makeText(context, "Error Fetching Data", Toast.LENGTH_LONG).show()
+                getSavedData()
+                Toast.makeText(context, "Error Fetching New Data", Toast.LENGTH_LONG).show()
             }
         })
     }
@@ -327,7 +328,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener,
             if(countries != null){
                 update(countries)
             } else {
-                Toast.makeText(context, "Error Occured", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "Error Fetching Data", Toast.LENGTH_LONG).show()
             }
 
         })
