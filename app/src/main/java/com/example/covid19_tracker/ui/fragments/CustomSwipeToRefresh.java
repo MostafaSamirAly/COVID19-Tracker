@@ -1,4 +1,4 @@
-package com.example.covid19_tracker;
+package com.example.covid19_tracker.ui.fragments;
 
 import android.content.Context;
 import android.util.AttributeSet;

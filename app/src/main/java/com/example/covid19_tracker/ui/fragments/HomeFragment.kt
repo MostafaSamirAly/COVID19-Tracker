@@ -1,4 +1,4 @@
-package com.example.covid19_tracker
+package com.example.covid19_tracker.ui.fragments
 
 import android.content.Context
 import android.net.ConnectivityManager
@@ -16,17 +16,17 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.*
 import com.bumptech.glide.Glide
+import com.example.covid19_tracker.R
 import com.example.covid19_tracker.model.Country
 import com.example.covid19_tracker.viewmodel.MainViewModel
 import com.google.android.material.appbar.AppBarLayout
 import kotlinx.android.synthetic.main.fragment_home.*
 import com.example.covid19_tracker.model.WorldState
 import com.parassidhu.coronavirusapp.util.*
-import java.util.concurrent.TimeUnit
 
-class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecyclerViewAdapter.OnEvent {
+class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener,
+    BaseRecyclerViewAdapter.OnEvent {
 
     protected lateinit var rootView: View
     lateinit var recyclerView: RecyclerView
@@ -40,7 +40,8 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         var TAG = HomeFragment::class.java.simpleName
         const val ARG_POSITION: String = "positioin"
         fun newInstance(): HomeFragment {
-            var fragment = HomeFragment();
+            var fragment =
+                HomeFragment();
             val args = Bundle()
             args.putInt(ARG_POSITION, 1)
             fragment.arguments = args
@@ -51,14 +52,16 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
-        if (checkFirstRun()){
-            setBackGroundSync()
-        }
         onCreateComponent()
     }
 
     private fun onCreateComponent() {
-        adapter = BaseRecyclerViewAdapter(dataList, context, this)
+        adapter =
+            BaseRecyclerViewAdapter(
+                dataList,
+                context,
+                this
+            )
     }
 
     override fun onCreateView(
@@ -139,6 +142,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         swipeToRefresh.setOnRefreshListener {
             if(checkConnectivity()){
                 adapter.clear()
+                showLoading(true)
                 makeApiCalls()
                 adapter.notifyDataSetChanged()
 
@@ -184,23 +188,22 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
     }
 
     private fun makeApiCalls() {
-       getNewData()
+        getNewData()
         getNewWorldRecords()
     }
 
     fun provideBarWeights(response: WorldState): Triple<Float?, Float?, Float?> {
         try {
-            var yellowVal = response.total_cases?.replace(",", "")?.toFloat()
-            var greenVal = response.total_recovered?.replace(",", "")?.toFloat()
-            var redVal = response.total_deaths?.replace(",", "")?.toFloat()
+            var yellowVal = response.total_cases.replace(",", "").toFloat()
+            var greenVal = response.total_recovered.replace(",", "").toFloat()
+            var redVal = response.total_deaths.replace(",", "").toFloat()
 
-            if (yellowVal != null && greenVal != null && redVal != null) {
                 while (yellowVal > 1f && greenVal > 1f && redVal > 1f) {
                     yellowVal /= 2f
                     greenVal /= 2f
                     redVal /= 2f
                 }
-            }
+
 
             return Triple(yellowVal, greenVal, redVal)
         } catch (e: Exception) { // If API response is incorrect
@@ -226,13 +229,6 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         }
     }
 
-//    fun updateworld(data: WorldState){
-//        if (data != null) {
-//            worldData = data
-//            adapter.notifyDataSetChanged()
-//            showLoading(false)
-//        }
-//    }
     private fun showLoading(flag: Boolean) {
         countryWiseRecyclerView.isVisible = !flag
         toolbarViews.isVisible = !flag
@@ -243,7 +239,7 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
             shimmerLoading.stop()
     }
 
-     fun setupWorldStats(response: WorldState) {
+    fun setupWorldStats(response: WorldState) {
         val weight = provideBarWeights(response)
 
         Glide.with(this).load(R.drawable.yellow_bar).apply(cornerRadius(2)).into(yellowBar)
@@ -269,29 +265,6 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
         params.putString("query", query)
     }
 
-    private fun setBackGroundSync() {
-
-        //create constraints to attach it to the request
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        //create the request
-        val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = 1 , repeatIntervalTimeUnit = TimeUnit.HOURS)
-            .setConstraints(constraints)
-            .build()
-        WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("update",
-            ExistingPeriodicWorkPolicy.KEEP,myRequest)
-
-        WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(myRequest.id)
-            .observe(this, Observer { workInfo ->
-                if(workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED){
-                    viewModel.getNewData()
-                    viewModel.getNewWorldData()
-                }
-
-            })
-    }
 
     private fun checkConnectivity(): Boolean {
         val connectivityManager =
@@ -340,7 +313,6 @@ class HomeFragment:Fragment(), AppBarLayout.OnOffsetChangedListener, BaseRecycle
                 var list = countries
                 adapter.clear()
                 update(list)
-                println("new data")
                 adapter.notifyDataSetChanged()
             } else {
                 Toast.makeText(context, "Error Fetching Data", Toast.LENGTH_LONG).show()

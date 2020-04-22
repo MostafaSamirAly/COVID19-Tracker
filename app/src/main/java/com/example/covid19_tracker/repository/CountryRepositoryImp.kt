@@ -13,7 +13,6 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class CountryRepositoryImp(private val countryDao: CountryDao) : CountryRepository {
-   // private val countryDao: CountryDao? = App.db.countryDao()
 
 
 

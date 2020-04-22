@@ -29,12 +29,17 @@
     <!-- Preference DropDown -->
     <string name="pref_update">Update Setting</string>
     <string name="choose_update">Click to change</string>
+    <string name="one_hour">Every 1 Hour</string>
+    <string name="six_hours">Every 6 Hours</string>
+    <string name="twelve_hours">Every 12 Hours</string>
+    <string name="twenty_four_hours">Every 24 Hours</string>
+    <string name="no_Alert">No Alert</string>
     <string-array name="update_choices">
-        <item name="one_hour">Every 1 Hour</item>
-        <item name="six_hours">Every 6 Hours</item>
-        <item name="twelve_hours">Every 12 Hours</item>
-        <item name="twenty_four_hours">Every 24 Hours</item>
-        <item name="no_Alert">No Alert</item>
+        <item name="no_Alert">@string/no_Alert</item>
+        <item name="one_hour">@string/one_hour</item>
+        <item name="six_hours">@string/six_hours</item>
+        <item name="twelve_hours">@string/twelve_hours</item>
+        <item name="twenty_four_hours">@string/twenty_four_hours</item>
     </string-array>
 
 </resources>

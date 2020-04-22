@@ -1,24 +1,15 @@
-package com.example.covid19_tracker
+package com.example.covid19_tracker.ui.activities
 
-import android.app.Application
-import android.content.Context
-import android.net.ConnectivityManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.work.*
-import com.example.covid19_tracker.model.Country
-import com.example.covid19_tracker.model.WorldState
-import com.example.covid19_tracker.repository.CountryRepositoryImp
+import com.example.covid19_tracker.R
+import com.example.covid19_tracker.ui.fragments.HomeFragment
+import com.example.covid19_tracker.ui.fragments.SettingsFragment
 import com.example.covid19_tracker.viewmodel.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
 
@@ -64,7 +55,10 @@ class MainActivity : AppCompatActivity() {
         activeFragment = homeFragment
 
         supportFragmentManager.commit {
-            add(R.id.homeContainer, homeFragment, HOME)
+            add(
+                R.id.homeContainer, homeFragment,
+                HOME
+            )
         }
     }
 
@@ -91,7 +85,10 @@ class MainActivity : AppCompatActivity() {
                 if (frag == null) {
                     supportFragmentManager.commit {
                         hide(activeFragment)
-                        add(R.id.homeContainer, homeFragment, HOME)
+                        add(
+                            R.id.homeContainer, homeFragment,
+                            HOME
+                        )
                     }
                 } else {
                     supportFragmentManager.commit {
@@ -113,7 +110,10 @@ class MainActivity : AppCompatActivity() {
                 if (frag == null) {
                     supportFragmentManager.commit {
                         hide(activeFragment)
-                        add(R.id.homeContainer, settingsFragment, SETTINGS)
+                        add(
+                            R.id.homeContainer, settingsFragment,
+                            SETTINGS
+                        )
                     }
                 } else {
                     supportFragmentManager.commit {

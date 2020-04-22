@@ -1,22 +1,14 @@
-package com.example.covid19_tracker
+package com.example.covid19_tracker.ui.fragments
 
-import android.content.Context
-import android.content.Intent
-import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
-import android.provider.SyncStateContract
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.*
 import androidx.work.*
+import com.example.covid19_tracker.MyWorker
+import com.example.covid19_tracker.R
 import com.example.covid19_tracker.viewmodel.MainViewModel
 import java.util.concurrent.TimeUnit
 
@@ -28,7 +20,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
             const val ARG_POSITION: String = "positioin"
 
             fun newInstance(): SettingsFragment {
-                var fragment = SettingsFragment();
+                var fragment =
+                    SettingsFragment();
                 val args = Bundle()
                 args.putInt(ARG_POSITION, 1)
                 fragment.arguments = args
@@ -53,27 +46,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
 //                true
 //            }
 
-            val update = findPreference<DropDownPreference>("pref_update")
+            val update = findPreference<ListPreference>("pref_update")
             update?.setOnPreferenceChangeListener { preference, newValue ->
                 var index: Long? = null
                 when(newValue){
-                    "No Alert" -> index = null
-                    "Every 1 Hour" -> index = 1
-                    "Every 6 Hours" -> index = 6
-                    "Every 12 Hours" -> index = 12
-                    "Every 24 Hours" -> index = 24
+                   getString(R.string.no_Alert)-> index = null
+                    getString(R.string.one_hour) -> index = 1
+                    getString(R.string.six_hours)-> index = 6
+                    getString(R.string.twelve_hours)-> index = 12
+                    getString(R.string.twenty_four_hours) -> index = 24
                     else -> index = null
                 }
-                if (index != null){
+
                     setBackGroundSync(index)
-                }
                 true
             }
 
 
         }
 
-    private fun setBackGroundSync(interval : Long) {
+    private fun setBackGroundSync(interval : Long?) {
 
         if (interval != null){
 
@@ -86,14 +78,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
             val myRequest = PeriodicWorkRequestBuilder<MyWorker>(repeatInterval = interval , repeatIntervalTimeUnit = TimeUnit.HOURS)
                 .setConstraints(constraints)
                 .build()
-            WorkManager.getInstance(requireContext()).enqueueUniquePeriodicWork("update",
-                ExistingPeriodicWorkPolicy.REPLACE,myRequest)
 
-            WorkManager.getInstance(requireContext()).getWorkInfoByIdLiveData(myRequest.id)
+            WorkManager.getInstance(requireContext())
+                .enqueueUniquePeriodicWork("update",
+                ExistingPeriodicWorkPolicy.REPLACE,myRequest)
+            Toast.makeText(
+                activity,
+                "you will be notified every $interval hour(s)",
+                Toast.LENGTH_SHORT
+            ).show()
+            WorkManager.getInstance(requireContext())
+                .getWorkInfosForUniqueWorkLiveData("update")
                 .observe(this, Observer {
-                    Toast.makeText(activity,"you will be notified every $interval hour(s)",Toast.LENGTH_SHORT).show()
-                    viewModel.getNewWorldData()
-                    viewModel.getNewData()
+                        viewModel.getNewWorldData()
+                        viewModel.getNewData()
+
                 })
         }else{
             WorkManager.getInstance(requireContext()).cancelUniqueWork("update")

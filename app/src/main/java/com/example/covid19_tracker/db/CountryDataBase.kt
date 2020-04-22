@@ -1,11 +1,9 @@
 package com.example.covid19_tracker.db
 
-import android.app.Application
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.example.covid19_tracker.MainActivity
 import com.example.covid19_tracker.model.Country
 import com.example.covid19_tracker.model.WorldState
 

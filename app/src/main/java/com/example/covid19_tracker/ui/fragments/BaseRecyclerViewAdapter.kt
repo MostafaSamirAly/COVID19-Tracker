@@ -1,9 +1,6 @@
-package com.example.covid19_tracker
+package com.example.covid19_tracker.ui.fragments
 
 import android.content.Context
-import android.opengl.Visibility
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
@@ -11,6 +8,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
+import com.example.covid19_tracker.R
 import com.example.covid19_tracker.model.Country
 
   class BaseRecyclerViewAdapter(private var dataList: MutableList<Country>, private val context: Context?, private val listener: OnEvent) : RecyclerView.Adapter<BaseRecyclerViewAdapter.ViewHolder>(),
@@ -18,10 +16,7 @@ import com.example.covid19_tracker.model.Country
       var dataCopy = mutableListOf<Country>()
       var subscribeFlag = false
       var subCountry : String? = null
-/*
-     init {
-        dataCopy = ArrayList(dataList)
-    }*/
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val pref = context?.getSharedPreferences("sub_country", Context.MODE_PRIVATE)
@@ -44,7 +39,6 @@ import com.example.covid19_tracker.model.Country
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val covidModel = dataList.get(position)
-        //holder.rowNumberTextView.text = (dataList.indexOf(covidModel) + 1).toString()
         holder.rowNumberTextView.text = (holder.adapterPosition + 1).toString()
         holder.countryTextView.text = covidModel.country_name
         holder.casesTextView.text = covidModel.cases
@@ -86,13 +80,13 @@ import com.example.covid19_tracker.model.Country
     }
 
     class ViewHolder(itemLayoutView: View) : RecyclerView.ViewHolder(itemLayoutView) {
-        lateinit var rowNumberTextView: TextView
-        lateinit var countryTextView: TextView
-        lateinit var casesTextView: TextView
-        lateinit var deathsTextView: TextView
-        lateinit var recoveredTextView: TextView
-        lateinit var newcasesTextView: TextView
-        lateinit var pinImageView: ImageView
+         var rowNumberTextView: TextView
+         var countryTextView: TextView
+         var casesTextView: TextView
+         var deathsTextView: TextView
+         var recoveredTextView: TextView
+         var newcasesTextView: TextView
+         var pinImageView: ImageView
 
 
         init {

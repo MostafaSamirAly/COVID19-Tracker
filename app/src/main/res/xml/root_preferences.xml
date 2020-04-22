@@ -24,7 +24,7 @@
 
     <PreferenceCategory android:title="Update Setting">
 
-        <DropDownPreference
+        <ListPreference
 
             app:useSimpleSummaryProvider="true"
             android:key="pref_update"
